@@ -36,7 +36,15 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 3. Copy the contents of `supabase/migrations/001_initial_schema.sql`
 4. Paste and run in the SQL Editor
 
-#### 5. Start Development Server
+> Tip: If you use the Supabase CLI, you can also run `npm run db:push` (requires the `supabase` CLI and network access).
+
+#### 5. Configure Authentication
+1. In Supabase, open Authentication → Providers → Email
+2. Enable Email/Password authentication
+3. (Optional) Enable email confirmations for signups
+4. Set a Password Recovery redirect URL (e.g. `http://localhost:3000/reset-password`)
+
+#### 6. Start Development Server
 ```bash
 npm run dev
 ```

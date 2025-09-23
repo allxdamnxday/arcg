@@ -33,17 +33,19 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protected routes
-  if (request.nextUrl.pathname.startsWith('/(app)') && !user) {
+  const { pathname } = request.nextUrl
+  const publicPaths = new Set(["/", "/login", "/register", "/reset-password"]) // add more public routes as needed
+  const isPublic = publicPaths.has(pathname)
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/reset-password"
+  const isProtectedArea = pathname.startsWith("/projects") || pathname.startsWith("/change-orders") || pathname.startsWith("/dashboard") || pathname.startsWith("/app/")
+
+  // Redirect unauthenticated users trying to access protected areas
+  if (!user && (isProtectedArea || !isPublic)) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Redirect authenticated users away from auth pages
-  if (
-    (request.nextUrl.pathname === '/login' ||
-     request.nextUrl.pathname === '/register') &&
-    user
-  ) {
+  if (user && isAuthPage) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
