@@ -1,6 +1,5 @@
-"use server"
+'use server'
 
-import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { projectCreateSchema, projectUpdateSchema } from '@/lib/validations/project'
 import { createClient } from '@/lib/supabase/server'
@@ -14,11 +13,17 @@ export async function createProjectAction(formData: FormData) {
   }
   const parsed = projectCreateSchema.safeParse(input)
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.flatten().formErrors.join(', ') }
+    const message = encodeURIComponent(
+      parsed.error.flatten().formErrors.join(', ') || 'Invalid project data'
+    )
+    redirect(`/projects/new?m=${message}&t=error`)
   }
   const supabase = await createClient()
   const { error } = await supabase.from('projects').insert(parsed.data)
-  if (error) return { ok: false, error: error.message }
+  if (error) {
+    const message = encodeURIComponent(error.message)
+    redirect(`/projects/new?m=${message}&t=error`)
+  }
   redirect('/projects?m=Project%20created&t=success')
 }
 
@@ -31,11 +36,17 @@ export async function updateProjectAction(id: string, formData: FormData) {
   }
   const parsed = projectUpdateSchema.safeParse(input)
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.flatten().formErrors.join(', ') }
+    const message = encodeURIComponent(
+      parsed.error.flatten().formErrors.join(', ') || 'Invalid project data'
+    )
+    redirect(`/projects/${id}?m=${message}&t=error`)
   }
   const supabase = await createClient()
   const { error } = await supabase.from('projects').update(parsed.data).eq('id', id)
-  if (error) return { ok: false, error: error.message }
+  if (error) {
+    const message = encodeURIComponent(error.message)
+    redirect(`/projects/${id}?m=${message}&t=error`)
+  }
   redirect(`/projects/${id}?m=Project%20updated&t=success`)
 }
 

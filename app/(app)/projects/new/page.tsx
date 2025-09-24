@@ -3,8 +3,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ToastFromSearchParams } from '@/components/ui/toast'
 
-export default function NewProjectPage() {
+export default function NewProjectPage({
+  searchParams,
+}: {
+  searchParams?: { m?: string; t?: 'success' | 'error' }
+}) {
   return (
     <div className="max-w-xl">
       <Card>
@@ -12,7 +17,14 @@ export default function NewProjectPage() {
           <CardTitle>New Project</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={async (formData: FormData) => { 'use server'; await createProjectAction(formData) }} className="space-y-4">
+          <ToastFromSearchParams message={searchParams?.m} type={searchParams?.t ?? null} />
+          <form
+            action={async (formData: FormData) => {
+              'use server'
+              await createProjectAction(formData)
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="project_number">Project number</Label>
               <Input id="project_number" name="project_number" required />

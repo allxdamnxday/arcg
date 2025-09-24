@@ -1,9 +1,14 @@
-# ARCG Change Order Management System
+---
+📚 [Home](../README.md) | 🐳 [Docker](../README_DOCKER.md) | 🤝 [Contributing](../CONTRIBUTING.md)
+---
 
-## Quick Start Guide
+# Manual Setup Guide
 
-### Prerequisites
-- Node.js 18+ installed
+For setting up the ARCG Change Order Management System without Docker.
+
+## Prerequisites
+- Node.js 22+ installed
+- npm 10.9+
 - Supabase account (free tier works)
 
 ### Setup Instructions
@@ -33,10 +38,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 #### 4. Run Database Migrations
 1. Go to your Supabase dashboard
 2. Navigate to SQL Editor
-3. Copy the contents of `supabase/migrations/001_initial_schema.sql`
-4. Paste and run in the SQL Editor
+3. Run each migration file in order:
+   - `supabase/migrations/001_initial_schema.sql`
+   - `supabase/migrations/002_sync_schema.sql`
+   - `supabase/migrations/003_delay_notice_policies.sql`
+   - `supabase/migrations/004_change_order_details.sql`
 
-> Tip: If you use the Supabase CLI, you can also run `npm run db:push` (requires the `supabase` CLI and network access).
+> Tip: If you have the Supabase CLI installed, you can run `npm run db:push` instead.
 
 #### 5. Configure Authentication
 1. In Supabase, open Authentication → Providers → Email
@@ -44,7 +52,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 3. (Optional) Enable email confirmations for signups
 4. Set a Password Recovery redirect URL (e.g. `http://localhost:3000/reset-password`)
 
-#### 6. Start Development Server
+#### 6. Configure Storage Buckets
+In Supabase Storage create a bucket named `co-images` and mark it as **public**. This is where OCR source images will be stored.
+
+#### 7. Start Development Server
 ```bash
 npm run dev
 ```
@@ -89,4 +100,6 @@ Visit [http://localhost:3000](http://localhost:3000)
 - **Build errors**: Run `npm run typecheck` to find type issues
 
 ### Support
-Refer to `DEVELOPMENT_ROADMAP.md` for detailed development guide.
+- See [Architecture Guide](./ARCHITECTURE.md) for system design details
+- See [Contributing Guide](../CONTRIBUTING.md) for development workflow
+- See [Roadmap](./ROADMAP.md) for feature planning

@@ -1,0 +1,25 @@
+services:
+  app:
+    build:
+      context: .
+      target: dev
+      dockerfile: Dockerfile
+    container_name: arcg-dev
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env.local
+    environment:
+      - WATCHPACK_POLLING=true # For Windows file watching
+      - NODE_ENV=development
+    networks:
+      - arcg-network
+    restart: unless-stopped
+
+networks:
+  arcg-network:
+    driver: bridge

@@ -6,10 +6,18 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { ToastFromSearchParams } from '@/components/ui/toast'
 
-export default async function NewDelayNoticePage() {
+export default async function NewDelayNoticePage({
+  searchParams,
+}: {
+  searchParams?: { m?: string; t?: 'success' | 'error' }
+}) {
   const supabase = await createClient()
-  const { data: projects } = await supabase.from('projects').select('id, project_number, name').order('project_number')
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('id, project_number, name')
+    .order('project_number')
   return (
     <div className="max-w-xl">
       <Card>
@@ -17,13 +25,22 @@ export default async function NewDelayNoticePage() {
           <CardTitle>New Delay Notice</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={async (fd: FormData) => { 'use server'; await createDelayNoticeAction(fd) }} className="space-y-4">
+          <ToastFromSearchParams message={searchParams?.m} type={searchParams?.t ?? null} />
+          <form
+            action={async (fd: FormData) => {
+              'use server'
+              await createDelayNoticeAction(fd)
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="project_id">Project</Label>
               <Select id="project_id" name="project_id" required>
                 <option value="">Select a project</option>
                 {(projects || []).map((p) => (
-                  <option key={p.id} value={p.id}>{p.project_number} — {p.name}</option>
+                  <option key={p.id} value={p.id}>
+                    {p.project_number} — {p.name}
+                  </option>
                 ))}
               </Select>
             </div>
@@ -48,7 +65,11 @@ export default async function NewDelayNoticePage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="time_impact_days_estimate">Est. Time Impact (days)</Label>
-                <Input id="time_impact_days_estimate" name="time_impact_days_estimate" type="number" />
+                <Input
+                  id="time_impact_days_estimate"
+                  name="time_impact_days_estimate"
+                  type="number"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="recipients">Recipients (comma separated emails)</Label>
@@ -62,4 +83,3 @@ export default async function NewDelayNoticePage() {
     </div>
   )
 }
-

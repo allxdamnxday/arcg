@@ -1,8 +1,7 @@
-"use client"
+'use client'
 
 import * as React from 'react'
 import { Dialog, DialogFooter, DialogHeader } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 
 export function ConfirmDialog({
   title = 'Are you sure?',
@@ -27,7 +26,9 @@ export function ConfirmDialog({
         <DialogHeader>{title}</DialogHeader>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
         <DialogFooter>
-          <button className="rounded-md border px-3 py-2 text-sm" onClick={() => setOpen(false)}>{cancelLabel}</button>
+          <button className="rounded-md border px-3 py-2 text-sm" onClick={() => setOpen(false)}>
+            {cancelLabel}
+          </button>
           <form action={action}>
             <button className="rounded-md border px-3 py-2 text-sm">{confirmLabel}</button>
           </form>

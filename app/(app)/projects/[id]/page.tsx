@@ -2,8 +2,15 @@ import { getProjectById, getProjectChangeOrders } from '@/lib/supabase/queries/p
 import { deleteProjectAction } from '@/app/(app)/projects/actions'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import Link from 'next/link'
+import { ToastFromSearchParams } from '@/components/ui/toast'
 
-export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
+export default async function ProjectDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams?: { m?: string; t?: 'success' | 'error' }
+}) {
   const [project, cos] = await Promise.all([
     getProjectById(params.id),
     getProjectChangeOrders(params.id),
@@ -11,9 +18,12 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
 
   return (
     <div className="space-y-6">
+      <ToastFromSearchParams message={searchParams?.m} type={searchParams?.t ?? null} />
       <div>
         <h1 className="text-2xl font-semibold">{project.name}</h1>
-        <p className="text-sm text-muted-foreground">{project.project_number} • {project.client_name}</p>
+        <p className="text-sm text-muted-foreground">
+          {project.project_number} • {project.client_name}
+        </p>
         <div className="mt-3">
           <ConfirmDialog
             title="Delete project?"
@@ -21,10 +31,11 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
             confirmLabel="Delete"
             action={async () => {
               'use server'
-              const { deleteProjectAction } = await import('@/app/(app)/projects/actions')
               await deleteProjectAction(project.id, '/projects?m=Project%20deleted&t=success')
             }}
-            trigger={<button className="rounded-md border px-3 py-1.5 text-sm">Delete project</button>}
+            trigger={
+              <button className="rounded-md border px-3 py-1.5 text-sm">Delete project</button>
+            }
           />
         </div>
       </div>
@@ -44,7 +55,9 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               {cos.map((co) => (
                 <tr key={co.id} className="border-t">
                   <td className="px-3 py-2">
-                    <Link className="underline" href={`/change-orders/${co.id}`}>{co.co_number}</Link>
+                    <Link className="underline" href={`/change-orders/${co.id}`}>
+                      {co.co_number}
+                    </Link>
                   </td>
                   <td className="px-3 py-2">{co.title}</td>
                   <td className="px-3 py-2">{co.status}</td>
@@ -52,7 +65,9 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               ))}
               {cos.length === 0 && (
                 <tr>
-                  <td className="px-3 py-4 text-muted-foreground" colSpan={3}>No change orders</td>
+                  <td className="px-3 py-4 text-muted-foreground" colSpan={3}>
+                    No change orders
+                  </td>
                 </tr>
               )}
             </tbody>

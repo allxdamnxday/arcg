@@ -2,17 +2,23 @@ import Link from 'next/link'
 import { getProjects } from '@/lib/supabase/queries/projects'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { revalidatePath } from 'next/cache'
 import { ToastFromSearchParams } from '@/components/ui/toast'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { deleteProjectAction } from '@/app/(app)/projects/actions'
 
-export default async function ProjectsListPage({ searchParams }: { searchParams: { q?: string; sort?: string; dir?: string; m?: string; t?: string } }) {
+export default async function ProjectsListPage({
+  searchParams,
+}: {
+  searchParams: { q?: string; sort?: string; dir?: string; m?: string; t?: 'success' | 'error' }
+}) {
   const q = searchParams?.q ?? ''
-  const sort = (searchParams?.sort as 'created_at'|'project_number'|'name'|undefined) ?? 'created_at'
-  const dir = (searchParams?.dir as 'asc'|'desc'|undefined) ?? 'desc'
+  const sort =
+    (searchParams?.sort as 'created_at' | 'project_number' | 'name' | undefined) ?? 'created_at'
+  const dir = (searchParams?.dir as 'asc' | 'desc' | undefined) ?? 'desc'
   const projects = await getProjects({ q, sort, dir })
   return (
     <div className="space-y-4">
-      <ToastFromSearchParams message={searchParams?.m} type={searchParams?.t as any} />
+      <ToastFromSearchParams message={searchParams?.m} type={searchParams?.t ?? null} />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Projects</h1>
         <Button asChild>
@@ -41,32 +47,40 @@ export default async function ProjectsListPage({ searchParams }: { searchParams:
               <th className="px-3 py-2">Project #</th>
               <th className="px-3 py-2">Name</th>
               <th className="px-3 py-2">Client</th>
+              <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {projects.map((p) => (
               <tr key={p.id} className="border-t">
                 <td className="px-3 py-2">
-                  <Link href={`/projects/${p.id}`} className="underline">{p.project_number}</Link>
+                  <Link href={`/projects/${p.id}`} className="underline">
+                    {p.project_number}
+                  </Link>
                 </td>
                 <td className="px-3 py-2">{p.name}</td>
                 <td className="px-3 py-2">{p.client_name}</td>
                 <td className="px-3 py-2 text-right">
-                  {(() => { const { ConfirmDialog } = require('@/components/ui/confirm-dialog'); return (
-                    <ConfirmDialog
-                      title="Delete project?"
-                      description="This will remove the project and related change orders."
-                      confirmLabel="Delete"
-                      action={async () => { 'use server'; const { deleteProjectAction } = await import('@/app/(app)/projects/actions'); await deleteProjectAction(p.id, '/projects?m=Project%20deleted&t=success') }}
-                      trigger={<button className="rounded-md border px-2 py-1 text-xs">Delete</button>}
-                    />
-                  ) })()}
+                  <ConfirmDialog
+                    title="Delete project?"
+                    description="This will remove the project and related change orders."
+                    confirmLabel="Delete"
+                    action={async () => {
+                      'use server'
+                      await deleteProjectAction(p.id, '/projects?m=Project%20deleted&t=success')
+                    }}
+                    trigger={
+                      <button className="rounded-md border px-2 py-1 text-xs">Delete</button>
+                    }
+                  />
                 </td>
               </tr>
             ))}
             {projects.length === 0 && (
               <tr>
-                <td className="px-3 py-4 text-muted-foreground" colSpan={3}>No projects</td>
+                <td className="px-3 py-4 text-muted-foreground" colSpan={4}>
+                  No projects
+                </td>
               </tr>
             )}
           </tbody>

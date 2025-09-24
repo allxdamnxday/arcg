@@ -1,12 +1,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { StatusBadge } from '@/components/features/change-orders/status-badge'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const [{ count: projectsCount }, { count: coCount }, { data: recentCos }] = await Promise.all([
+  const [
+    { count: projectsCount },
+    { count: coCount },
+    { count: pendingCount },
+    { data: recentCos },
+  ] = await Promise.all([
     supabase.from('projects').select('*', { count: 'exact', head: true }),
     supabase.from('change_orders').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('change_orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending'),
     supabase
       .from('change_order_summary')
       .select('*')
@@ -39,8 +49,7 @@ export default async function DashboardPage() {
             <CardTitle>Pending COs</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Could fetch a dedicated pending count; simplify here by filtering */}
-            <div className="text-3xl font-semibold">{(recentCos || []).filter((c) => c.status === 'pending').length}</div>
+            <div className="text-3xl font-semibold">{pendingCount ?? 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -67,7 +76,9 @@ export default async function DashboardPage() {
                   </td>
                   <td className="px-3 py-2">{co.title}</td>
                   <td className="px-3 py-2">{co.project_number}</td>
-                  <td className="px-3 py-2">{(() => { const { StatusBadge } = require('@/components/features/change-orders/status-badge'); return <StatusBadge status={co.status as any} /> })()}</td>
+                  <td className="px-3 py-2">
+                    <StatusBadge status={co.status as 'draft' | 'pending' | 'approved' | null} />
+                  </td>
                 </tr>
               ))}
             </tbody>

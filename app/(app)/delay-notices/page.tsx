@@ -1,21 +1,27 @@
 import { listDelayNotices } from '@/lib/supabase/queries/delay-notices'
-import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { ToastFromSearchParams } from '@/components/ui/toast'
 
-export default async function DelayNoticesListPage({ searchParams }: { searchParams: { q?: string; status?: string; m?: string; t?: string } }) {
+export default async function DelayNoticesListPage({
+  searchParams,
+}: {
+  searchParams: { q?: string; status?: string; m?: string; t?: 'success' | 'error' }
+}) {
   const q = searchParams?.q ?? ''
-  const status = (searchParams?.status as 'draft'|'sent'|'acknowledged'|undefined) ?? undefined
+  const status =
+    (searchParams?.status as 'draft' | 'sent' | 'acknowledged' | undefined) ?? undefined
   const notices = await listDelayNotices({ q, status })
   return (
     <div className="space-y-4">
-      <ToastFromSearchParams message={searchParams?.m} type={searchParams?.t as any} />
+      <ToastFromSearchParams message={searchParams?.m} type={searchParams?.t ?? null} />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Delay Notices</h1>
-        <Button asChild><Link href="/delay-notices/new">New Delay Notice</Link></Button>
+        <Button asChild>
+          <Link href="/delay-notices/new">New Delay Notice</Link>
+        </Button>
       </div>
       <form action="/delay-notices" className="flex flex-wrap gap-2">
         <Input name="q" placeholder="Search..." defaultValue={q} />
@@ -39,13 +45,21 @@ export default async function DelayNoticesListPage({ searchParams }: { searchPar
           <tbody>
             {notices.map((n) => (
               <tr key={n.id} className="border-t">
-                <td className="px-3 py-2"><Link className="underline" href={`/delay-notices/${n.id}`}>{n.title}</Link></td>
+                <td className="px-3 py-2">
+                  <Link className="underline" href={`/delay-notices/${n.id}`}>
+                    {n.title}
+                  </Link>
+                </td>
                 <td className="px-3 py-2">{n.incident_date}</td>
                 <td className="px-3 py-2">{n.status}</td>
               </tr>
             ))}
             {notices.length === 0 && (
-              <tr><td className="px-3 py-4 text-muted-foreground" colSpan={3}>No delay notices</td></tr>
+              <tr>
+                <td className="px-3 py-4 text-muted-foreground" colSpan={3}>
+                  No delay notices
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
@@ -53,4 +67,3 @@ export default async function DelayNoticesListPage({ searchParams }: { searchPar
     </div>
   )
 }
-
